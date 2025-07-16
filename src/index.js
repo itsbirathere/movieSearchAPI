@@ -2,8 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import movieRoutes from "./routes/movieRoutes.js"; // movie routes
-import userRoute from "./routes/userRoute.js"; // user routes
+import movieRoutes from "./routes/movieRoutes.js";
+import userRoute from "./routes/userRoute.js"; // Optional for user management
 
 dotenv.config();
 
@@ -18,8 +18,8 @@ app.use(
 );
 
 // Routes
-app.use("/api/movies", movieRoutes); // http://localhost:3000/api/movies
-app.use("/api/user", userRoute); // http://localhost:3000/api/user
+app.use("/api/movies", movieRoutes);
+app.use("/api/user", userRoute);
 
 // MongoDB connection
 mongoose
@@ -35,8 +35,11 @@ mongoose
     process.exit(1);
   });
 
+
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+

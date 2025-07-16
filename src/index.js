@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import movieRoutes from "./routes/movieRoutes.js";
-import userRoute from "./routes/userRoute.js"; // Optional for user management
+import userRoute from "./routes/userRoutes.js"; // Optional for user management
 
 dotenv.config();
 

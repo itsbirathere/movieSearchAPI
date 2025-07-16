@@ -1,6 +1,6 @@
 import axios from "axios";
-import Movie from "../models/Movie.js";
-import User from "../models/User.js";
+import Movie from "../model/movieModel.js";
+import User from "../model/userModel.js";
 
 export const searchMovies = async (req, res) => {
   const { query } = req.query;

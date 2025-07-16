@@ -5,7 +5,7 @@ import {
   getMovieById,
   addToWatchlist,
   getWatchlist,
-} from "../controllers/movieController.js";
+} from "../controllers/movieControllers.js";
 
 const router = express.Router();
 

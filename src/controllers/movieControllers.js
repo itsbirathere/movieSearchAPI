@@ -1,19 +1,22 @@
 import axios from "axios";
-import Movie from "../model/movieModel.js";
-import User from "../model/userModel.js";
+import Movie from "../models/Movie.js";
+import User from "../models/User.js";
 
 export const searchMovies = async (req, res) => {
+  const { query } = req.query;
+  if (!query) {
+    res.status(400).json({
+      message: "query parameter is required",
+    });
+    return;
+  }
+
   try {
-    const { query } = req.query;
-    if (!query) {
-      return res.status(400).json({ error: "Query parameter is required" });
-    }
-    // Query OMDB API
     const response = await axios.get(
       `http://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=${process.env.OMDB_API_KEY}`
     );
     const movies = response.data.Search || [];
-    // Save movies to MongoDB (optional)
+
     if (movies.length > 0) {
       await Movie.insertMany(
         movies.map((movie) => ({
@@ -25,60 +28,118 @@ export const searchMovies = async (req, res) => {
         { ordered: false }
       );
     }
-    res.json(movies);
+
+    res.status(200).json({
+      message: "movies fetched successfully",
+      data: movies,
+    });
   } catch (error) {
     console.error("Error searching movies:", error.message);
-    res.status(500).json({ error: "Error searching movies" });
+    res.status(500).json({
+      message: "something went wrong during movie search",
+    });
   }
 };
 
 export const getMovieById = async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    res.status(400).json({
+      message: "movie id is required",
+    });
+    return;
+  }
+
   try {
-    const movie = await Movie.findOne({ imdbID: req.params.id });
+    const movie = await Movie.findOne({ imdbID: id });
     if (!movie) {
-      return res.status(404).json({ error: "Movie not found" });
+      res.status(404).json({
+        message: "movie with this id is not found",
+      });
+      return;
     }
-    res.json(movie);
+
+    res.status(200).json({
+      message: "movie fetched successfully",
+      data: movie,
+    });
   } catch (error) {
     console.error("Error fetching movie:", error.message);
-    res.status(500).json({ error: "Error fetching movie" });
+    res.status(500).json({
+      message: "something went wrong while fetching movie",
+    });
   }
 };
 
 export const addToWatchlist = async (req, res) => {
+  const { movieId } = req.body;
+  const userId = req.user.id;
+  if (!movieId || !userId) {
+    res.status(400).json({
+      message: "movieId and userId are required",
+    });
+    return;
+  }
+
   try {
-    const { userId, movieId } = req.body;
-    if (!userId || !movieId) {
-      return res.status(400).json({ error: "userId and movieId are required" });
-    }
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      res.status(404).json({
+        message: "user not found",
+      });
+      return;
     }
+
     const movie = await Movie.findOne({ imdbID: movieId });
     if (!movie) {
-      return res.status(404).json({ error: "Movie not found" });
+      res.status(404).json({
+        message: "movie not found",
+      });
+      return;
     }
+
     if (!user.watchlist.includes(movie._id)) {
       user.watchlist.push(movie._id);
       await user.save();
     }
-    res.json({ message: "Movie added to watchlist" });
+
+    res.status(200).json({
+      message: "movie added to watchlist successfully",
+    });
   } catch (error) {
     console.error("Error adding to watchlist:", error.message);
-    res.status(500).json({ error: "Error adding to watchlist" });
+    res.status(500).json({
+      message: "something went wrong while adding to watchlist",
+    });
   }
 };
 
 export const getWatchlist = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    res.status(400).json({
+      message: "userId is required",
+    });
+    return;
+  }
+
   try {
-    const user = await User.findById(req.params.userId).populate("watchlist");
+    const user = await User.findById(userId).populate("watchlist");
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      res.status(404).json({
+        message: "user not found",
+      });
+      return;
     }
-    res.json(user.watchlist);
+
+    res.status(200).json({
+      message: "watchlist fetched successfully",
+      data: user.watchlist,
+    });
   } catch (error) {
     console.error("Error fetching watchlist:", error.message);
-    res.status(500).json({ error: "Error fetching watchlist" });
+    res.status(500).json({
+      message: "something went wrong while fetching watchlist",
+    });
   }
 };
